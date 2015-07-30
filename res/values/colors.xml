@@ -1,0 +1,11 @@
+<resources>
+    
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="violet_red">#D02090</color>
+    <color name="green">#009900</color>
+    <color name="red">#FF0000</color>
+    <color name="gold">#FFD700</color>
+    <color name="blue">#0000CD</color>
+    
+</resources>
