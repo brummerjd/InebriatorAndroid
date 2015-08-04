@@ -63,14 +63,21 @@ public class BluetoothManager extends Application {
 	private static final String INEBRIATOR_NAME = "HC-06";
 	private static final String INEBRIATOR_UUID_STRING = "00001101-0000-1000-8000-00805F9B34FB";
 	private static final String INEBRIATOR_PIN_STRING = "1234";
-	public static final String MESSAGE_BREAK = "`";
-	private static final String MESSAGE_END = "~";
+	//public static final String MESSAGE_BREAK = "`";
+	//private static final String MESSAGE_END = "~";
+	
+	public static final char MESSAGE_BREAK = 1;
+	public static final char MESSAGE_END = 2;
+	public static final char REQUEST_MENU = 17;
+	
+	public static final char REQUEST = 14;
+	public static final char MENU = 16;
 	
 	public static final int FOUND_INEBRIATOR = 60;
 	public static final int MESSAGE_READ = 61;
 	public static final int MESSAGE_WRITE = 62;
 	
-	public static final String REQUEST_MENU = "REQUEST" + MESSAGE_BREAK + "MENU" + MESSAGE_END;
+	//public static final String REQUEST_MENU = "REQUEST" + MESSAGE_BREAK + "MENU" + MESSAGE_END;
 	public static final String RESPONSE_MENU_START = "RESPONSE<>MENU";
 	
 	public static final String UPDATE_ADD_LIQUOR_START = "UPDATE<>ADD_LIQUOR";
@@ -336,7 +343,7 @@ public class BluetoothManager extends Application {
             		String strIncom = new String(buffer, 0, bytes);              // create string from bytes array
             		
             		SB.append(strIncom);
-            		int endOfLineIndex = SB.indexOf(MESSAGE_END);
+            		int endOfLineIndex = SB.indexOf("" + MESSAGE_END);
             		if (endOfLineIndex > 0)
             		{
             			String sbprint = SB.substring(0, endOfLineIndex);
@@ -375,7 +382,7 @@ public class BluetoothManager extends Application {
 	public synchronized void requestLiquorList()
 	{
 		this.connectToInebriator();
-		this.sendMessage(this.REQUEST_MENU);
+		this.sendMessage("" + this.REQUEST_MENU);
 	}
 	
 	public synchronized void addNewLiquor(String name, int nozzle)

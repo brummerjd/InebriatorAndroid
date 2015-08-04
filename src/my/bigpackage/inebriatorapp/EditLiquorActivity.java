@@ -49,7 +49,7 @@ public class EditLiquorActivity extends Activity {
                     	{
                     		BM.destroyConnection();
                     		
-                    		String[] liquors = action.substring(messageBreakLocation+1).split(BluetoothManager.MESSAGE_BREAK);
+                    		String[] liquors = action.substring(messageBreakLocation+1).split("" + BluetoothManager.MESSAGE_BREAK);
                     		LiquorAA.clear();
                     		for (String l : liquors)
                     		{
