@@ -12,10 +12,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
     
-    <Button
-        android:id="@+id/editLiquorB"
-        android:layout_width="wrap_content"
+    <ListView
+        android:id="@+id/liquorLV"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Edit Liquor" />
+        android:layout_margin="5dp"
+        android:layout_below="@id/messageB"
+        android:divider="@android:color/transparent"
+  		android:dividerHeight="5dp" />
 
 </LinearLayout>

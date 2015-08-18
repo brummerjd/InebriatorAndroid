@@ -1,5 +1,7 @@
 package my.bigpackage.inebriatorapp;
 
+import java.util.ArrayList;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -12,7 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.ListView;
 
 public class MainActivity extends Activity {
 	
@@ -20,7 +22,8 @@ public class MainActivity extends Activity {
 	public static final int BLUETOOTH_CONNECTION_FAILED = 2;
 	
 	private Button MessageB;
-	private Button EditLiquorB;
+	private LiquorListAdapter LiquorLA;
+	private ListView LiquorLV;
 	private Handler H;
 	private BluetoothManager BM;
 	
@@ -36,14 +39,23 @@ public class MainActivity extends Activity {
                 switch (msg.what) {
                 	case BLUETOOTH_CONNECTION_FAILED:	// alert user of issue connecting to Bluetooth, then close application
                 		String error = (String) msg.obj;
-                		AlertBox("Inebriator Connection Failed", error);
+                		AlertBoxToClose("Inebriator Connection Failed", error);
                 		finish();
                 		break;
                 	case BluetoothManager.FOUND_INEBRIATOR:	// alert activity that Inebriator has been successfully paired
                 		initializeMainLayout();
                 		break;
                 	case BluetoothManager.MESSAGE_READ:	// alert activity that message has been received from Inebriator
-                		AlertBox("MESSAGE RECEIVED", (String)msg.obj);
+                		switch (((String)msg.obj).charAt(0)) {
+                			case BluetoothManager.RESPONSE_MAKING_DRINK:
+                				AlertBox("YAY", "Making drank");
+                				BM.destroyConnection();
+                				break;
+                		}
+                		break;
+                	case AmountEditorDialog.INGREDIENT_UPDATED:
+                		LiquorLA.getItem(msg.arg1).setNumberOfShots(msg.arg2*0.25);
+                		LiquorLA.notifyDataSetChanged();
                 		break;
                 }
             };
@@ -64,20 +76,25 @@ public class MainActivity extends Activity {
 		this.MessageB = (Button)this.findViewById(R.id.messageB);
         this.MessageB.setOnClickListener(new View.OnClickListener() {
         	public void onClick(View v) {
-        		BM.connectToInebriator();
-        		BM.sendMessage("BITCHES");
-        		//BM.destroyConnection();
+//        		BM.requestDrink(LiquorLA.getDrink());
+        		Log.e("DRINK", LiquorLA.getDrink().getDrinkInstructions());
         	}
         });
         
-        this.EditLiquorB = (Button)this.findViewById(R.id.editLiquorB);
-        this.EditLiquorB.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				Intent i = new Intent(MainActivity.this, EditLiquorActivity.class);
-        		MainActivity.this.startActivity(i);
-        		finish();
-			}
-		});
+        ArrayList<Ingredient> ls = new ArrayList<Ingredient>();
+        for (int i = 1; i <= 8; i++) { ls.add(new Ingredient("Liquor " + i, 0)); }
+        
+        this.LiquorLA = new LiquorListAdapter(this, R.layout.list_item_liquor, ls);
+        this.LiquorLV = (ListView)findViewById(R.id.liquorLV);
+        this.LiquorLV.setAdapter(this.LiquorLA);
+	}
+	
+	public void ingredientButtonOnClickHandler(View v) {
+		//((LiquorListAdapter.IngredientHolder)v.getTag()).Ingred.setNumberOfShots(1);
+		//this.LiquorLA.notifyDataSetChanged();
+		
+		AmountEditorDialog aed = new AmountEditorDialog(this, this.H, LiquorLA.getPosition(((LiquorListAdapter.IngredientHolder)v.getTag()).Ingred));
+		aed.showDialog();
 	}
 	
 	private void InitializeBluetooth()
@@ -95,7 +112,7 @@ public class MainActivity extends Activity {
 		if (!this.BM.isAdapterEnabled())
 		{
 			// Have user turn on Bluetooth
-			AlertBox("Bluetooth Required", "Please turn on Bluetooth, is it required to connect with the Inebriator.");
+			AlertBoxToClose("Bluetooth Required", "Please turn on Bluetooth, is it required to connect with the Inebriator.");
 			
 			Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
 			startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
@@ -108,6 +125,20 @@ public class MainActivity extends Activity {
 	
 	// General method for displaying alerts to user
 	public void AlertBox(String title, String message)
+	{
+		if (message == null)
+		{ return; }
+		new AlertDialog.Builder(this)
+			.setTitle(title)
+			.setMessage(message + "\r\n\r\nPress OK to exit.")
+			.setPositiveButton("OK", new DialogInterface.OnClickListener()
+										{ public void onClick(DialogInterface arg0, int arg1)
+											{  }
+										})
+			.show();
+	}
+	
+	public void AlertBoxToClose(String title, String message)
 	{
 		if (message == null)
 		{ return; }
@@ -130,7 +161,7 @@ public class MainActivity extends Activity {
 			else if(resultCode == RESULT_CANCELED) {
 				// User cancelled turning on Bluetooth, so alert them that this is bad
 				String error = "You must turn on Bluetooth to use this application.";
-				this.H.obtainMessage(this.BLUETOOTH_CONNECTION_FAILED, -1, -1, error).sendToTarget();
+				this.H.obtainMessage(BLUETOOTH_CONNECTION_FAILED, -1, -1, error).sendToTarget();
 			}
 		}
 	}

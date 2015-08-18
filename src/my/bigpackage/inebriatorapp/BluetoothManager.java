@@ -63,15 +63,11 @@ public class BluetoothManager extends Application {
 	private static final String INEBRIATOR_NAME = "HC-06";
 	private static final String INEBRIATOR_UUID_STRING = "00001101-0000-1000-8000-00805F9B34FB";
 	private static final String INEBRIATOR_PIN_STRING = "1234";
-	//public static final String MESSAGE_BREAK = "`";
-	//private static final String MESSAGE_END = "~";
 	
 	public static final char MESSAGE_BREAK = 1;
 	public static final char MESSAGE_END = 2;
-	public static final char REQUEST_MENU = 17;
-	
-	public static final char REQUEST = 14;
-	public static final char MENU = 16;
+	public static final char REQUEST_DRINK = 17;
+	public static final char RESPONSE_MAKING_DRINK = 18;
 	
 	public static final int FOUND_INEBRIATOR = 60;
 	public static final int MESSAGE_READ = 61;
@@ -350,11 +346,19 @@ public class BluetoothManager extends Application {
             			message += sbprint;
             			MainHandler.obtainMessage(MESSAGE_READ, -1, -1, message).sendToTarget();
             			message = "";
+            			
+            			// sleep a bit so we don't interpret a single message more than once
+            			try {
+							sleep(100);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
             		}
             		else
             		{
             			//message += strIncom;
-            			Log.e("TAG", message);
+            			Log.e("Mid-message", message);
             		}
 				}
 				catch (IOException e) { break; }
@@ -379,15 +383,9 @@ public class BluetoothManager extends Application {
 		}
 	}
 	
-	public synchronized void requestLiquorList()
+	public synchronized void requestDrink(Drink d)
 	{
 		this.connectToInebriator();
-		this.sendMessage("" + this.REQUEST_MENU);
-	}
-	
-	public synchronized void addNewLiquor(String name, int nozzle)
-	{
-		this.connectToInebriator();
-		this.sendMessage(this.UPDATE_ADD_LIQUOR_START + MESSAGE_BREAK + name + MESSAGE_BREAK + Integer.toString(nozzle));
+		this.sendMessage(this.REQUEST_DRINK + d.getDrinkInstructions());
 	}
 }
